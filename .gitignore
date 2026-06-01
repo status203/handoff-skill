@@ -1,0 +1,6 @@
+# Runtime session state created by the handoff skill itself (default location).
+# Per-machine, regenerated per session — not inherited by a fork.
+.handoffs/
+
+# Per-machine Claude Code settings.
+.claude/settings.local.json
