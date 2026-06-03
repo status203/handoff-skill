@@ -83,4 +83,4 @@ pickup →  mv to <base>/consumed/<file>
 
 - Pickup never deletes; it moves. The scan only ever globs `<base>/active/`, so consumed handoffs drop out of view automatically.
 - Consumed handoffs accumulate harmlessly in `<base>/consumed/`. There is **no prune flow** — to reclaim space in the rare case it matters, `rm -rf <base>/consumed/` by hand.
-- For the **default** `.handoffs/` location, recommend gitignoring it: handoffs are per-machine session state, regenerated per session, and shouldn't be inherited by a fork. A project that overrides the location via `.claude/handoff.conf` decides tracking for itself (e.g. pointing at a tracked-but-not-shipped directory).
+- Handoffs can carry conversational content that shouldn't be shared. The write flow keeps literal secrets/PII out unless you ask for them, and warns if a handoff will be git-tracked *and* still looks sensitive (see `references/writing.md` § Sensitive data). Where handoffs are stored otherwise — gitignored, or a publish-stripped folder — is the project's choice; no-leak is the only requirement.

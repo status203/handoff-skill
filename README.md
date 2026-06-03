@@ -18,6 +18,8 @@ There are many handoff/context-passing scripts for Claude Code. Here are the dec
 
 **Session-bounded content.** The skill explicitly guards against over-researching: a handoff captures what the session produced, not what it could produce with more investigation. For unstarted ideas, it asks the user for enough narrative to be legible later rather than exploring the codebase to populate sections.
 
+**Sensitive-data guard (soft, LLM-interpreted).** Two best-effort guards, both LLM judgment rather than a deterministic scanner: handoffs are authored to *reference* sensitive values rather than embed them (unless you ask), and at write time, if the handoff will be git-tracked, the content is reviewed for likely secrets/PII and you're warned. It *describes* what counts as sensitive rather than prescribing patterns, so treat the warning as a prompt to check, not a guarantee.
+
 **Structured sections with empty-section honesty.** Six mandatory sections (Goal, State, Decisions, Ruled out, Next steps, Key files) plus one optional (Context). Empty sections say "None this session." rather than being omitted — the receiver knows what was considered, not just what had content.
 
 ## Load profile
@@ -27,8 +29,8 @@ A skill's instructions load into the context window when it fires, so word count
 | Invocation | Loads | Words |
 |---|---|---|
 | Pick up a handoff | entry + pickup flow | ~1,050 |
-| Write a handoff | entry + write flow | ~1,600 |
-| Both (pick up, then write a continuation) | entry + both flows | ~1,900 |
+| Write a handoff | entry + write flow | ~2,000 |
+| Both (pick up, then write a continuation) | entry + both flows | ~2,300 |
 
 The split is also deliberate about *where in a session* the cost lands. Pickup tends to fire near the **start** — context is near-empty, and whatever loads stays resident for the rest of the session, so the branch that's live longest is the lighter one. Writing fires at the **end** (or at least later, for genuine asides) — context is tighter by then, but less of the session remains to carry the heavier branch.
 

@@ -4,3 +4,6 @@
 
 # Per-machine Claude Code settings.
 .claude/settings.local.json
+
+# Design notes / specs — transient working substrate, not needed long-term.
+notes/
