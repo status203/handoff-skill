@@ -29,8 +29,8 @@ A skill's instructions load into the context window when it fires, so word count
 | Invocation | Loads | Words |
 |---|---|---|
 | Pick up a handoff | entry + pickup flow | ~1,050 |
-| Write a handoff | entry + write flow | ~2,000 |
-| Both (pick up, then write a continuation) | entry + both flows | ~2,300 |
+| Write a handoff | entry + write flow | ~2,050 |
+| Both (pick up, then write a continuation) | entry + both flows | ~2,350 |
 
 The split is also deliberate about *where in a session* the cost lands. Pickup tends to fire near the **start** — context is near-empty, and whatever loads stays resident for the rest of the session, so the branch that's live longest is the lighter one. Writing fires at the **end** (or at least later, for genuine asides) — context is tighter by then, but less of the session remains to carry the heavier branch.
 
