@@ -28,16 +28,6 @@ created: 2026-05-24T14:30:00Z
 
 No `status` field — location (`active/` vs `consumed/`) encodes that.
 
-### Chain line (optional)
-
-When a handoff continues or derives from one or more handoffs **this session picked up**, record them on a single line in the body, immediately below the frontmatter, by **filename** (not a path — files move between `active/` and `consumed/`, so a path-qualified link goes stale):
-
-```
-Continues from: `2026-05-24T10-15-auth-refactor.md`
-```
-
-List more than one when the work genuinely merges threads — the lineage is a DAG, and each path back to a root is a chain. The link may cross focus: lineage follows provenance (what you actually picked up and continued), not slug similarity. It is an in-text breadcrumb, not a frontmatter property — it does not earn an always-scanned slot, and pickup does **not** auto-follow it (see `references/pickup.md`).
-
 ### Sections
 
 Six mandatory sections, one optional. Mandatory sections always appear — if nothing applies, write "None this session."
@@ -80,14 +70,13 @@ A handoff's job is to let a future session *continue* — which almost never nee
 
 1. Determine focus: the argument if provided, otherwise `"continuation"`. (`<base>` is already resolved — see `SKILL.md` § Handoffs directory.)
 2. Create `<base>/active/` if it doesn't exist.
-3. Chain link — **provenance-based, no scan.** If this session picked up one or more handoffs *and* what you're writing continues or derives from them, you'll add a `Continues from:` line naming each relevant handoff by filename (see Chain line). If the session picked up nothing, or this handoff is unrelated to what was picked up, omit the line. Never scan for topical/slug matches — lineage follows what you actually picked up, and may cross focus.
 4. Walk the session context. Extract content into the seven sections. Apply style rules: prose, specific, honest about empty sections. Don't reproduce sensitive values — reference them per § *Sensitive data* (Authoring).
 5. Get the real timestamp: run `date -u +%Y-%m-%dT%H:%M:%SZ` in its own step, before writing. Never guess the time, reuse a stale reading from earlier in the session, or stamp local time as UTC. Derive both fields from this one value — the `created:` frontmatter is the output verbatim (e.g. `2026-05-24T14:30:00Z`); the filename `<ISO-datetime>` is the same instant to minute precision with `:` replaced by `-` (e.g. `2026-05-24T14-30`).
-6. Write the file to `<base>/active/<ISO-datetime>-<focus-slug>.md`, including the `Continues from:` line if step 3 found a candidate.
+6. Write the file to `<base>/active/<ISO-datetime>-<focus-slug>.md`.
 7. **Leak check.** After writing, check whether git will carry the file:
    ```sh
    git rev-parse --is-inside-work-tree >/dev/null 2>&1   # is this a git work tree?
    git check-ignore -q "<base>/active/<file>"            # exit 0 = ignored, 1 = will be tracked
    ```
    If there's no git work tree, or `check-ignore` exits **0** (ignored), skip — git won't carry the file. If `check-ignore` exits **1**, the file will be tracked (newly added, whitelisted, or already-tracked — the one call covers all three, including the whitelist-under-an-excluded-dir asymmetry, so no `git ls-files` is needed); scan its text against § *Sensitive data* — flag anything in those categories (judgment; err toward flagging).
-8. Report to the user: the **full path** of the file as written — the complete `<base>/active/<file>`, from the project root (e.g. `.handoffs/active/2026-05-24T14-30-auth-refactor.md`), not a bare filename or partial path. Handoffs are project-local, so this project-relative path uniquely identifies the file. Also report the chain link if any, and a one-line summary of what was captured. If the leak check matched, append a warning (warn, don't block): name the location, that git will track it, the find with its line/snippet, and the options — redact, gitignore the handoffs dir, or confirm it's fine. Note that git history retains it even if a later publish step strips the file.
+8. Report to the user: the **full path** of the file as written — the complete `<base>/active/<file>`, from the project root (e.g. `.handoffs/active/2026-05-24T14-30-auth-refactor.md`), not a bare filename or partial path. Handoffs are project-local, so this project-relative path uniquely identifies the file. Report a one-line summary of what was captured. If the leak check matched, append a warning (warn, don't block): name the location, that git will track it, the find with its line/snippet, and the options — redact, gitignore the handoffs dir, or confirm it's fine. Note that git history retains it even if a later publish step strips the file.
