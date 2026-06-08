@@ -14,13 +14,13 @@ There are many handoff/context-passing scripts for Claude Code. Here are the dec
 
 **Location-encoded lifecycle.** Each handoff lives in `<base>/active/` (waiting for pickup) or `<base>/consumed/` (picked up). Pickup *moves* the file between the two — an atomic rename, not a frontmatter edit — so state is encoded by location, with no `status` field to drift. Consumed handoffs stay on disk; nothing is silently deleted. There's no prune command: to reclaim space in the rare case it matters, delete `<base>/consumed/` by hand.
 
-**Provenance-based chaining.** When a session picks up a handoff and the work continues or derives from it, the new handoff records a `Continues from:` line (by filename) — so a multi-session effort has traceable lineage. Lineage follows what you actually picked up, not slug similarity, so it can cross focus and a handoff can name more than one parent (a merge). The link is in-text, not frontmatter; pickup doesn't auto-follow it, and a predecessor read-on-demand ranks as superseded background — the picked-up handoff is the live state.
+**Ledgers for durable invariants.** A handoff is a snapshot, consumed on pickup — so across a long multi-session thread, conclusions settled early decay and a later session rederives them, or loses a fact already surfaced. A *ledger* is a persistent store of an effort's durable invariants — ruled-out approaches, framing decisions, surfaced facts — that every session reads and maintains as a small living set. Where it lives and what's in it are per-project judgments; the skill describes what belongs there and relays the *pointer*, not the contents, in each handoff's Ledgers section. A later session finds a ledger because the handoff it picked up named it, and reads it as live state before orienting. This replaces the old `Continues from:` chain line — across a long thread, the ledger is what actually needs carrying.
 
 **Session-bounded content.** The skill explicitly guards against over-researching: a handoff captures what the session produced, not what it could produce with more investigation. For unstarted ideas, it asks the user for enough narrative to be legible later rather than exploring the codebase to populate sections.
 
 **Sensitive-data guard (soft, LLM-interpreted).** Two best-effort guards, both LLM judgment rather than a deterministic scanner: handoffs are authored to *reference* sensitive values rather than embed them (unless you ask), and at write time, if the handoff will be git-tracked, the content is reviewed for likely secrets/PII and you're warned. It *describes* what counts as sensitive rather than prescribing patterns, so treat the warning as a prompt to check, not a guarantee.
 
-**Structured sections with empty-section honesty.** Six mandatory sections (Goal, State, Decisions, Ruled out, Next steps, Key files) plus one optional (Context). Empty sections say "None this session." rather than being omitted — the receiver knows what was considered, not just what had content.
+**Structured sections with empty-section honesty.** Six mandatory sections (Goal, State, Decisions, Ruled out, Next steps, Key files) plus two optional (Context, Ledgers). Empty sections say "None this session." rather than being omitted — the receiver knows what was considered, not just what had content.
 
 ## Load profile
 
@@ -29,8 +29,8 @@ A skill's instructions load into the context window when it fires, so word count
 | Invocation | Loads | Words |
 |---|---|---|
 | Pick up a handoff | entry + pickup flow | ~1,050 |
-| Write a handoff | entry + write flow | ~2,050 |
-| Both (pick up, then write a continuation) | entry + both flows | ~2,350 |
+| Write a handoff | entry + write flow | ~2,600 |
+| Both (pick up, then write a continuation) | entry + both flows | ~2,900 |
 
 The split is also deliberate about *where in a session* the cost lands. Pickup tends to fire near the **start** — context is near-empty, and whatever loads stays resident for the rest of the session, so the branch that's live longest is the lighter one. Writing fires at the **end** (or at least later, for genuine asides) — context is tighter by then, but less of the session remains to carry the heavier branch.
 
@@ -38,7 +38,7 @@ The split is also deliberate about *where in a session* the cost lands. Pickup t
 
 **A session ran out of room.** You're mid-refactor, the agent's starting to repeat "I am a fish" or contradict earlier decisions. The context window is the wall. Write a handoff, start a fresh session, pick it up — the new session has the state without the noise. (If the work's continuing and the context just needs trimming, `/compact` may be the lighter call — see [When /compact is enough](#when-compact-is-enough).)
 
-**Work spans more than one session.** A multi-evening auth refactor: each evening's handoff uses focus `auth refactor`; a `Continues from:` line threads them into a traceable lineage. Tomorrow's session starts oriented instead of re-reading the diff.
+**Work spans more than one session.** A multi-evening auth refactor: each evening's handoff uses focus `auth refactor`, and a shared ledger carries the effort's settled invariants across them — so tomorrow's session won't rederive what tonight's ruled out.
 
 **An aside would derail the main thread.** A spike or open-ended side-question surfaces while you're deep in something else — *"would approach A or B be cleaner?"* — the kind where you'll want to poke at it and let early results steer the next question. Branch it: write a spike handoff, spin up a fresh session, do the investigation, hand back curated findings. The main thread stays focused; the return handoff is the filter — main picks up the distilled answer, not the side session's raw exploration. (If the question's bounded enough to specify up front, a subagent is the lighter call — see [When a subagent is enough](#when-a-subagent-is-enough).)
 
@@ -84,13 +84,13 @@ Download or clone this repository, then either copy or symlink the skill directo
 ```
 .handoffs/                              (or the path in .claude/handoff.conf)
   active/
-    2026-05-24T16-00-auth-refactor.md   (Continues from: the consumed one below)
+    2026-05-24T16-00-auth-refactor.md
     2026-05-25T09-00-continuation.md
   consumed/
     2026-05-24T14-30-auth-refactor.md
 ```
 
-Files are `<ISO-datetime>-<focus-slug>.md`. Frontmatter tracks focus and creation time; state is the subdirectory (`active/` vs `consumed/`), and any chain link is a `Continues from:` line in the body.
+Files are `<ISO-datetime>-<focus-slug>.md`. Frontmatter tracks focus and creation time; state is the subdirectory (`active/` vs `consumed/`), and any ledgers relevant to the work are listed by path in the body's Ledgers section.
 
 ## Configuration
 
