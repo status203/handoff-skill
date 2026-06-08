@@ -10,7 +10,7 @@ Scan `<base>/active/`:
 
 ## Presentation
 
-Read the selected handoff in full. Present a distilled summary — not the raw file.
+Read the selected handoff in full. **If it has a Ledgers section, read each ledger it names before distilling anything.** A ledger is *live state*, not superseded background: it holds the invariants the thread has already settled, so it must frame your orientation rather than arrive after you've re-proposed something it rules out. If a named ledger is missing, note it and carry on. Then present a distilled summary — not the raw file — and let the ledger's invariants shape the Next steps you surface.
 
 **Fresh session** (full orientation):
 - Goal — what the work is about
@@ -27,5 +27,4 @@ Read the selected handoff in full. Present a distilled summary — not the raw f
 ## After pickup
 
 - **Consume by moving the file** immediately, as part of pickup: `mv <base>/active/<file> <base>/consumed/<file>` (create `<base>/consumed/` first if absent). Consuming on pickup *claims* the handoff — it leaves the active pool so an overlapping or parallel session won't pick up the same one. Location encodes consumed; do not edit frontmatter. The move is atomic (power-cut safe), and a mistaken consume is cheap to undo — `mv` it back to `active/`.
-- **Chain is consulted only on demand, and ranks below the handoff you picked up.** If the handoff has a `Continues from:` line, you may mention the predecessor(s) exist — but do **not** read or follow automatically. Open one only if the user asks, or the current handoff explicitly defers a specific fact to it; then read *that one* predecessor for *that fact* — one hop, never a transitive walk. A predecessor is **superseded background**: where it conflicts with the handoff you picked up, the picked-up one wins (it's later and supersedes by construction). Read it for context the current handoff assumes, not for current direction.
 - Next steps are suggestions, not assignments.
